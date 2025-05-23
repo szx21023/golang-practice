@@ -1,62 +1,37 @@
 package main
 
 import (
+    "log"
+    "time"
+    "net/http"
+
     "github.com/gin-gonic/gin"
 )
 
-type StructA struct {
-    FieldA string `form:"field_a"`
-}
-
-type StructB struct {
-    NestedStruct StructA
-    FieldB string `form:"field_b"`
-}
-
-type StructC struct {
-    NestedStructPointer *StructA
-    FieldC string `form:"field_c"`
-}
-
-type StructD struct {
-    NestedAnonyStruct struct {
-        FieldX string `form:"field_x"`
-    }
-    FieldD string `form:"field_d"`
-}
-
-func GetDataB(c *gin.Context) {
-    var b StructB
-    c.Bind(&b)
-    c.JSON(200, gin.H{
-        "a": b.NestedStruct,
-        "b": b.FieldB,
-    })
-}
-
-func GetDataC(c *gin.Context) {
-    var b StructC
-    c.Bind(&b)
-    c.JSON(200, gin.H{
-        "a": b.NestedStructPointer,
-        "c": b.FieldC,
-    })
-}
-
-func GetDataD(c *gin.Context) {
-    var b StructD
-    c.Bind(&b)
-    c.JSON(200, gin.H{
-        "x": b.NestedAnonyStruct,
-        "d": b.FieldD,
-    })
+type Person struct {
+    Name string `form:"name"`
+    Address string `form:"address"`
+    Birthday time.Time `form:"birthday" time_format:"2006-01-02" time_utc:"1"`
 }
 
 func main() {
     router := gin.Default()
-    router.GET("/getb", GetDataB)
-    router.GET("/getc", GetDataC)
-    router.GET("/getd", GetDataD)
+    router.GET("/testing", startPage)
+    router.Run(":8080")
+}
 
-    router.Run()
+func startPage(c *gin.Context) {
+    var person Person
+
+    err := c.ShouldBind(&person)
+    if err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+
+    log.Println(person.Name)
+    log.Println(person.Address)
+    log.Println(person.Birthday)
+
+    c.String(200, "success")
 }
