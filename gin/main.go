@@ -1,30 +1,37 @@
 package main
 
 import (
-    "fmt"
+    "log"
     "time"
 
     "github.com/gin-gonic/gin"
 )
 
+func Logger() gin.HandlerFunc {
+    return func(c *gin.Context) {
+        t := time.Now()
+
+        c.Set("example", "12345")
+
+        c.Next()
+
+        latency := time.Since(t)
+        log.Print(latency)
+
+        status := c.Writer.Status()
+        log.Println(status)
+    }
+}
+
 func main() {
     router := gin.New()
-    router.Use(gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
-        return fmt.Sprintf("%s - [%s] \"%s %s %s %d %s \"%s\" %s\"\n",
-            param.ClientIP,
-            param.TimeStamp.Format(time.RFC1123),
-            param.Method,
-            param.Path,
-            param.Request.Proto,
-            param.StatusCode,
-            param.Latency,
-            param.Request.UserAgent(),
-            param.ErrorMessage,
-        )
-    }))
-    router.Use(gin.Recovery())
-    router.GET("/ping", func(c *gin.Context) {
-        c.String(200, "pong")
+    router.Use(Logger())
+
+    router.GET("/test", func(c *gin.Context) {
+        example := c.MustGet("example").(string)
+
+        log.Println(example)
     })
+
     router.Run(":8080")
 }
