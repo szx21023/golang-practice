@@ -1,39 +1,30 @@
 package main
 
 import (
-    "log"
+    "fmt"
     "time"
-    "net/http"
 
     "github.com/gin-gonic/gin"
 )
 
-type Person struct {
-    Name string `form:"name"`
-    Address string `form:"address"`
-    Birthday time.Time `form:"birthday" time_format:"2006-01-02" time_utc:"1"`
-}
-
 func main() {
-    // gin.DisableConsoleColor()
-    gin.ForceConsoleColor()
-    router := gin.Default()
-    router.GET("/testing", startPage)
+    router := gin.New()
+    router.Use(gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
+        return fmt.Sprintf("%s - [%s] \"%s %s %s %d %s \"%s\" %s\"\n",
+            param.ClientIP,
+            param.TimeStamp.Format(time.RFC1123),
+            param.Method,
+            param.Path,
+            param.Request.Proto,
+            param.StatusCode,
+            param.Latency,
+            param.Request.UserAgent(),
+            param.ErrorMessage,
+        )
+    }))
+    router.Use(gin.Recovery())
+    router.GET("/ping", func(c *gin.Context) {
+        c.String(200, "pong")
+    })
     router.Run(":8080")
-}
-
-func startPage(c *gin.Context) {
-    var person Person
-
-    err := c.ShouldBind(&person)
-    if err != nil {
-        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-        return
-    }
-
-    log.Println(person.Name)
-    log.Println(person.Address)
-    log.Println(person.Birthday)
-
-    c.String(200, "success")
 }
