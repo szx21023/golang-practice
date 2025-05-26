@@ -15,6 +15,8 @@ type Person struct {
 }
 
 func main() {
+    // gin.DisableConsoleColor()
+    gin.ForceConsoleColor()
     router := gin.Default()
     router.GET("/testing", startPage)
     router.Run(":8080")
