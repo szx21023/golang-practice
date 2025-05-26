@@ -1,37 +1,56 @@
 package main
 
 import (
-    "log"
-    "time"
+    "errors"
+    "net/http"
 
     "github.com/gin-gonic/gin"
 )
 
-func Logger() gin.HandlerFunc {
+func ErrorHandler() gin.HandlerFunc {
     return func(c *gin.Context) {
-        t := time.Now()
-
-        c.Set("example", "12345")
-
         c.Next()
 
-        latency := time.Since(t)
-        log.Print(latency)
+        if len(c.Errors) > 0 {
+            err := c.Errors.Last().Err
 
-        status := c.Writer.Status()
-        log.Println(status)
+            c.JSON(http.StatusInternalServerError, map[string]any{
+                "success": false,
+                "message": err.Error(),
+            })
+        }
     }
 }
 
 func main() {
-    router := gin.New()
-    router.Use(Logger())
+    r := gin.Default()
+    r.Use(ErrorHandler())
 
-    router.GET("/test", func(c *gin.Context) {
-        example := c.MustGet("example").(string)
+    r.GET("/ok", func(c *gin.Context) {
+        somethingWentWrong := false
+        if somethingWentWrong {
+            c.Error(errors.New("something went wrong"))
+            return
+        }
 
-        log.Println(example)
+        c.JSON(http.StatusOK, gin.H{
+            "success": true,
+            "message": "Everythin is fine!",
+        })
     })
 
-    router.Run(":8080")
+    r.GET("/error", func(c *gin.Context) {
+        somethingWentWrong := true
+        if somethingWentWrong {
+            c.Error(errors.New("something wnet wrong"))
+            return
+        }
+
+        c.JSON(http.StatusOK, gin.H{
+            "success": true,
+            "message": "Everythin is fine!",
+        })
+    })
+
+    r.Run(":8080")
 }
