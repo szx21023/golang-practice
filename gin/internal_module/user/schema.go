@@ -5,3 +5,8 @@ type CreateUserRequest struct {
     Account string `json:"account"`
     Password string `json:"password"`
 }
+
+type LoginRequest struct {
+    Account string `json:"account"`
+    Password string `json:"password"`
+}

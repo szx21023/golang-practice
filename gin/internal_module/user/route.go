@@ -11,6 +11,7 @@ func RegisterRoutes(r *gin.Engine) {
     {
         userGroup.GET("/:id", getUserHandler)
         userGroup.POST("", createUserHandler)
+        userGroup.POST("/login", loginHandler)
     }
 }
 
@@ -37,4 +38,21 @@ func createUserHandler(c *gin.Context) {
 
     // 使用結構化資料
     c.JSON(200, gin.H{"received": result})
+}
+
+func loginHandler(c *gin.Context) {
+    var req LoginRequest
+    if err := c.ShouldBindJSON(&req); err != nil {
+        c.JSON(400, gin.H{"error": "Invalid input"})
+        return
+    }
+
+    // 模擬登入邏輯
+    user, err := GetUserByAccount(req.Account)
+    if err != nil || user.Password != req.Password {
+        c.JSON(401, gin.H{"error": "Invalid credentials"})
+        return
+    }
+    // 登入成功
+    c.JSON(200, gin.H{"message": "Login successful", "user": user})
 }
