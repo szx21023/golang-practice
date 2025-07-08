@@ -14,6 +14,15 @@ func GetUserByID(id string) (User, error) {
     return user, nil
 }
 
+func GetUserByAccount(account string) (User, error) {
+    for _, user := range users {
+        if user.Account == account {
+            return user, nil
+        }
+    }
+    return User{}, fmt.Errorf("user not found")
+}
+
 // 建立使用者
 func CreateUser(req CreateUserRequest) User {
     id := fmt.Sprintf("%d", len(users)+1)
