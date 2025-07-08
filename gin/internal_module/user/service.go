@@ -20,6 +20,8 @@ func CreateUser(req CreateUserRequest) User {
     user := User{
         ID:   id,
         Name: req.Name,
+        Account: req.Account,
+        Password: req.Password,
     }
     users[id] = user
     return user
