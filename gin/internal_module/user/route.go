@@ -53,6 +53,12 @@ func loginHandler(c *gin.Context) {
         c.JSON(401, gin.H{"error": "Invalid credentials"})
         return
     }
+    // 生成 JWT
+    token, err := GenerateToken(user.ID)
+    if err != nil {
+        c.JSON(500, gin.H{"error": "Could not generate token"})
+        return
+    }
     // 登入成功
-    c.JSON(200, gin.H{"message": "Login successful", "user": user})
+    c.JSON(200, gin.H{"message": "Login successful", "user": user, "token": token})
 }
